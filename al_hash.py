@@ -31,7 +31,9 @@ def setup_env_variables() -> None:
     existing: dict[str, str] = {}
 
     if os.path.exists(env_file):
-        with open(env_file, "r") as f:
+        # Keep the original algorithm unchanged, but read the .env robustly.
+        # The upstream repository contains a non-UTF8 dash in the comment line.
+        with open(env_file, "r", encoding="utf-8", errors="ignore") as f:
             for line in f:
                 line = line.strip()
                 if "=" in line and not line.startswith("#"):
@@ -55,8 +57,8 @@ def setup_env_variables() -> None:
         print("[auth] HMAC_KEY loaded.")
 
     if changed:
-        with open(env_file, "w") as f:
-            f.write("# Auto-generated secrets — do NOT commit this file\n")
+        with open(env_file, "w", encoding="utf-8") as f:
+            f.write("# Auto-generated secrets - do NOT commit this file\n")
             for k, v in existing.items():
                 f.write(f"{k}={v}\n")
         print(f"[auth] Secrets saved to {env_file} — add it to .gitignore")
